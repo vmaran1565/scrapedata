@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Scrape Data</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <style>
+        .container{
+        width: 50%;
+    }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="alert alert-danger" style="display:none;text-align:center;">
+            <span class="showErrors"></span>
+        </div>
+        <form>
+            <div class="form-group">
+                <label for="property_url">Property Url:</label>
+                <input placeholder="http://www.abc.com/test" type="url" class="form-control" id="property_url">
+            </div>
+            <div class="form-group">
+                <label for="check_in_date">Check in Date:</label>
+                <input placeholder="YYYY-MM-DD" type="date" class="form-control" id="check_in_date">
+            </div>
+            <div class="form-group">
+                <label for="check_out_date">Check out Date:</label>
+                <input placeholder="YYYY-MM-DD" type="date" class="form-control" id="check_out_date">
+            </div>
+            <div class="form-group">
+                <label for="no_of_guest">No of guest:</label>
+                <input placeholder="no of guests" type="number" min="1" max="10" class="form-control" id="no_of_guest">
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+        <div class="showData"></div>
+        <!-- <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John</td>
+                    <td>Doe</td>
+                    <td>john@example.com</td>
+                </tr>
+                <tr>
+                    <td>Mary</td>
+                    <td>Moe</td>
+                    <td>mary@example.com</td>
+                </tr>
+                <tr>
+                    <td>July</td>
+                    <td>Dooley</td>
+                    <td>july@example.com</td>
+                </tr>
+            </tbody>
+            </table> -->
+    </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $("#property_url").on("keypress", (event) => {});
+            $("#check_in_date").on("keypress", (event) => {});
+            $("#check_out_date").on("keypress", (event) => {});
+            $("#no_of_guest").on("keypress", (event) => {});
+            $(".alert-danger").hide();
+            $(".btn-primary").on("click", (event) => {
+                let fieldValidated = false;
+                if (isNaN($("#no_of_guest").val())) {
+                    $(".showErrors").html("Invalid Guest count");
+                    $(".alert-danger").show();
+                    window.setTimeout(() => {
+                        $(".alert-danger").hide();
+                    }, 3000);
+                    return true;
+                }
+                $.ajax({
+                    method: "POST",
+                    url: "/checkAmount",
+                    data: {
+                        property_url: $("#property_url").val(),
+                        check_in_date: $("#check_in_date").val(),
+                        check_out_date: $("#check_out_date").val(),
+                        no_of_guest: $("#no_of_guest").val()
+                    },
+                    success: (response) => {
+                        if (response.lineItems) {
+                            let html = "<table class='table table-bordered'><tbody>";
+                            response.lineItems.forEach((element) => {
+                                html += "<tr><td>" + element.title + "</td><td>" +
+                                    element.amount + "</td></tr>";
+                            })
+                            if (response.totalsAmount) {
+                                html += "<tr><td><b>" + response.totalsAmount[0]["title"] +
+                                    "</b></td><td>" + response.totalsAmount[0]["amount"] +
+                                    "</td></td>";
+                            }
+                            html += "</tbody></table>";
+                            $(".showData").html(html);
+                        } else if (response.errors) {
+                            $(".showErrors").html(response.errors);
+                            $(".alert-danger").show();
+                            window.setTimeout(() => {
+                                $(".alert-danger").hide();
+                            }, 3000);
+                        }
+                    },
+                    failure: (error) => {
+                        console.log(error);
+                    }
+                });
+            })
+
+        });
+    </script>
+</body>
+
+</html>
